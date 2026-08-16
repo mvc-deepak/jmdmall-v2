@@ -1,21 +1,19 @@
 "use client"
 
-import { addToCart } from "@lib/data/cart"
+import { useCart } from "@lib/hooks/useCart"
 import { useIntersection } from "@lib/hooks/use-in-view"
 import { HttpTypes } from "@medusajs/types"
 import { Button } from "@modules/common/components/ui"
 import Divider from "@modules/common/components/divider"
 import OptionSelect from "@modules/products/components/product-actions/option-select"
 import { isEqual } from "lodash"
-import { useParams, usePathname, useSearchParams } from "next/navigation"
+import { usePathname, useSearchParams, useRouter } from "next/navigation"
 import { useEffect, useMemo, useRef, useState } from "react"
 import ProductPrice from "../product-price"
 import MobileActions from "./mobile-actions"
-import { useRouter } from "next/navigation"
 
 type ProductActionsProps = {
   product: HttpTypes.StoreProduct
-  region: HttpTypes.StoreRegion
   disabled?: boolean
 }
 
@@ -38,7 +36,6 @@ export default function ProductActions({
 
   const [options, setOptions] = useState<Record<string, string | undefined>>({})
   const [isAdding, setIsAdding] = useState(false)
-  const countryCode = useParams().countryCode as string
 
   // If there is only 1 variant, preselect the options
   useEffect(() => {
@@ -116,6 +113,7 @@ export default function ProductActions({
     return false
   }, [selectedVariant])
 
+  const { addItem } = useCart()
   const actionsRef = useRef<HTMLDivElement>(null)
 
   const inView = useIntersection(actionsRef, "0px")
@@ -126,10 +124,16 @@ export default function ProductActions({
 
     setIsAdding(true)
 
-    await addToCart({
-      variantId: selectedVariant.id,
-      quantity: 1,
-      countryCode,
+    await addItem(product.id, selectedVariant.id, 1, {
+      product_handle: product.handle,
+      title: product.title,
+      sku: selectedVariant.sku,
+      price: selectedVariant.calculated_price?.calculated_amount || 0,
+      image: product.thumbnail,
+      variant_title:
+        selectedVariant.title && selectedVariant.title !== "Default Title"
+          ? selectedVariant.title
+          : undefined,
     })
 
     setIsAdding(false)
