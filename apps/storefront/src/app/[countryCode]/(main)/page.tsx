@@ -2,7 +2,11 @@ import { Metadata } from "next"
 
 import FeaturedProducts from "@modules/home/components/featured-products"
 import Hero from "@modules/home/components/hero"
+import HomeBanner from "@modules/home/components/home-banner"
+import MainCategories from "@modules/home/components/main-categories"
+import CategoryProducts from "@modules/home/components/category-products"
 import { listCollections } from "@lib/data/collections"
+import { listCategories } from "@lib/data/categories"
 import { getRegion } from "@lib/data/regions"
 
 export const metadata: Metadata = {
@@ -24,6 +28,9 @@ export default async function Home(props: {
     fields: "id, handle, title",
   })
 
+  const allCategories = await listCategories({ limit: 100 })
+  const categories = (allCategories || [])
+
   if (!collections || !region) {
     return null
   }
@@ -31,10 +38,18 @@ export default async function Home(props: {
   return (
     <>
       <Hero />
+      <HomeBanner />
+
+      <MainCategories categories={categories} />
+
       <div className="py-12">
         <ul className="flex flex-col gap-x-6">
           <FeaturedProducts collections={collections} region={region} />
         </ul>
+      </div>
+
+      <div className="py-6">
+        <CategoryProducts region={region} />
       </div>
     </>
   )
