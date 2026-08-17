@@ -5,19 +5,24 @@ type InteractiveLinkProps = {
   href: string
   children?: React.ReactNode
   onClick?: () => void
+  className?: string
+  style?: React.CSSProperties
 }
 
 const InteractiveLink = ({
   href,
   children,
   onClick,
+  className,
+  style,
   ...props
 }: InteractiveLinkProps) => {
   return (
     <LocalizedClientLink
-      className="flex gap-x-1 items-center group"
+      className={className ? `flex gap-x-1 items-center group ${className}` : "flex gap-x-1 items-center group"}
       href={href}
       onClick={onClick}
+      style={style}
       {...props}
     >
       <Text className="text-ui-fg-interactive">{children}</Text>

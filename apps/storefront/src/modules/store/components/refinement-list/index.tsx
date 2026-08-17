@@ -67,7 +67,7 @@ const RefinementList = ({
     <div className="flex flex-col gap-6 py-4 mb-8 small:px-0 pl-6">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex flex-col gap-3">
-          <p className="text-base txt-compact-small-plus text-ui-fg-muted">Sort by</p>
+          <p className="text-sm font-semibold text-slate-700 uppercase tracking-wide">Sort by</p>
           <SortProducts
             sortBy={sortBy}
             setQueryParams={setQueryParams}

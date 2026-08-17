@@ -8,6 +8,7 @@ import {
   clearStoredCart,
   mergeGuestCart,
 } from "@lib/data/indexed-db-cart"
+import { setLocalGuestCartCookie } from "@lib/data/local-cart-cookie"
 import { HttpTypes } from "@medusajs/types"
 
 const initialCart = (): Cart => ({
@@ -18,18 +19,190 @@ const initialCart = (): Cart => ({
   is_guest: true,
 })
 
+const isAuthenticated = async (): Promise<boolean> => {
+  try {
+    const response = await fetch("/store/customers/me", {
+      cache: "no-store",
+      credentials: "include",
+    })
+    return response.ok
+  } catch {
+    return false
+  }
+}
+
+const fetchServerCart = async (): Promise<any | null> => {
+  try {
+    const response = await fetch("/store/carts", { cache: "no-store" })
+    if (!response.ok) {
+      return null
+    }
+
+    const data = await response.json()
+    return data?.cart ?? data ?? null
+  } catch {
+    return null
+  }
+}
+
+const addServerCartItem = async (item: CartItem) => {
+  try {
+    const serverCart = await fetchServerCart()
+    if (!serverCart?.id) {
+      return null
+    }
+
+    const response = await fetch(`/store/carts/${serverCart.id}/line-items`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        variant_id: item.variant_id,
+        quantity: item.quantity,
+      }),
+    })
+
+    if (!response.ok) {
+      return null
+    }
+
+    return await response.json()
+  } catch {
+    return null
+  }
+}
+
+const updateServerCartItem = async (variantId: string, quantity: number) => {
+  try {
+    const serverCart = await fetchServerCart()
+    if (!serverCart?.id || !Array.isArray(serverCart.items)) {
+      return null
+    }
+
+    const lineItem = serverCart.items.find(
+      (entry: any) => entry.variant_id === variantId || entry.id === variantId
+    )
+
+    if (!lineItem?.id) {
+      return null
+    }
+
+    const response = await fetch(`/store/carts/${serverCart.id}/line-items/${lineItem.id}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ quantity }),
+    })
+
+    if (!response.ok) {
+      return null
+    }
+
+    return await response.json()
+  } catch {
+    return null
+  }
+}
+
+const removeServerCartItem = async (variantId: string) => {
+  try {
+    const serverCart = await fetchServerCart()
+    if (!serverCart?.id || !Array.isArray(serverCart.items)) {
+      return null
+    }
+
+    const lineItem = serverCart.items.find(
+      (entry: any) => entry.variant_id === variantId || entry.id === variantId
+    )
+
+    if (!lineItem?.id) {
+      return null
+    }
+
+    const response = await fetch(`/store/carts/${serverCart.id}/line-items/${lineItem.id}`, {
+      method: "DELETE",
+    })
+
+    if (!response.ok) {
+      return null
+    }
+
+    return await response.json()
+  } catch {
+    return null
+  }
+}
+
+const clearServerCart = async () => {
+  try {
+    const serverCart = await fetchServerCart()
+    if (!serverCart?.id || !Array.isArray(serverCart.items)) {
+      return null
+    }
+
+    for (const lineItem of serverCart.items) {
+      if (lineItem?.id) {
+        await fetch(`/store/carts/${serverCart.id}/line-items/${lineItem.id}`, {
+          method: "DELETE",
+        })
+      }
+    }
+
+    return serverCart
+  } catch {
+    return null
+  }
+}
+
 export function useIndexedDbCart() {
   const [cart, setCart] = useState<Cart>(initialCart())
   const [isLoading, setIsLoading] = useState(true)
   const [isSyncing, setIsSyncing] = useState(false)
   const isMountedRef = useRef(false)
 
-  const updateCart = useCallback(async (updated: Cart) => {
+  const persistLocalCart = useCallback(async (updated: Cart) => {
     await saveStoredCart(updated)
+    setLocalGuestCartCookie(updated)
     setCart(updated)
     window.dispatchEvent(new CustomEvent("cartUpdated", { detail: updated }))
     return updated
   }, [])
+
+  const syncFromServer = useCallback(async () => {
+    try {
+      const response = await fetch("/store/carts", {
+        cache: "no-store",
+      })
+
+      const localCart = (await getStoredCart()) || initialCart()
+
+      if (!response.ok) {
+        setCart(localCart)
+        setLocalGuestCartCookie(localCart)
+        window.dispatchEvent(new CustomEvent("cartUpdated", { detail: localCart }))
+        return localCart
+      }
+
+      const data = await response.json()
+      const serverCart = data?.cart ?? data ?? { ...initialCart(), items: [] }
+      const merged = await mergeGuestCart(localCart, serverCart)
+
+      await saveStoredCart(merged)
+      setLocalGuestCartCookie(merged)
+      setCart(merged)
+      window.dispatchEvent(new CustomEvent("cartUpdated", { detail: merged }))
+      return merged
+    } catch (error) {
+      console.error("Failed to sync cart from server", error)
+      const local = (await getStoredCart()) || initialCart()
+      setCart(local)
+      setLocalGuestCartCookie(local)
+      window.dispatchEvent(new CustomEvent("cartUpdated", { detail: local }))
+      return local
+    }
+  }, [])
+
+  const updateCart = useCallback(async (updated: Cart) => {
+    return persistLocalCart(updated)
+  }, [persistLocalCart])
 
   const createGuestCart = useCallback(async () => {
     const newCart = initialCart()
@@ -39,9 +212,12 @@ export function useIndexedDbCart() {
   const loadCart = useCallback(async () => {
     const stored = await getStoredCart()
     if (stored) {
+      setLocalGuestCartCookie(stored)
       setCart(stored)
     } else {
-      setCart(initialCart())
+      const emptyCart = initialCart()
+      setLocalGuestCartCookie(emptyCart)
+      setCart(emptyCart)
     }
     setIsLoading(false)
   }, [])
@@ -128,12 +304,23 @@ export function useIndexedDbCart() {
         currentCart.last_updated = Date.now()
         currentCart.is_guest = currentCart.is_guest ?? true
 
-        return updateCart(currentCart)
+        const localUpdated = await updateCart(currentCart)
+
+        if (await isAuthenticated()) {
+          try {
+            await addServerCartItem(item)
+            return await syncFromServer()
+          } catch {
+            return localUpdated
+          }
+        }
+
+        return localUpdated
       } finally {
         setIsLoading(false)
       }
     },
-    [updateCart]
+    [syncFromServer, updateCart]
   )
 
   const updateQuantity = useCallback(
@@ -160,12 +347,23 @@ export function useIndexedDbCart() {
         )
         currentCart.last_updated = Date.now()
 
-        return updateCart(currentCart)
+        const localUpdated = await updateCart(currentCart)
+
+        if (await isAuthenticated()) {
+          try {
+            await updateServerCartItem(variantId, quantity)
+            return await syncFromServer()
+          } catch {
+            return localUpdated
+          }
+        }
+
+        return localUpdated
       } finally {
         setIsLoading(false)
       }
     },
-    [updateCart]
+    [syncFromServer, updateCart]
   )
 
   const removeItem = useCallback(
@@ -182,19 +380,39 @@ export function useIndexedDbCart() {
         )
         currentCart.last_updated = Date.now()
 
-        return updateCart(currentCart)
+        const localUpdated = await updateCart(currentCart)
+
+        if (await isAuthenticated()) {
+          try {
+            await removeServerCartItem(variantId)
+            return await syncFromServer()
+          } catch {
+            return localUpdated
+          }
+        }
+
+        return localUpdated
       } finally {
         setIsLoading(false)
       }
     },
-    [updateCart]
+    [syncFromServer, updateCart]
   )
 
   const clearCart = useCallback(async () => {
     setIsLoading(true)
     try {
+      if (await isAuthenticated()) {
+        try {
+          await clearServerCart()
+        } catch {
+          // Ignore server-side clear failures and keep the local cart clear.
+        }
+      }
+
       await clearStoredCart()
       const emptyCart = initialCart()
+      setLocalGuestCartCookie(null)
       setCart(emptyCart)
       window.dispatchEvent(new CustomEvent("cartUpdated", { detail: emptyCart }))
       return emptyCart
@@ -225,5 +443,6 @@ export function useIndexedDbCart() {
     removeItem,
     clearCart,
     setCartFromServer,
+    syncFromServer,
   }
 }

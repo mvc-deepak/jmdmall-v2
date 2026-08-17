@@ -64,6 +64,10 @@ export default function ProductDetailPage({
   }
 
   const handleQuantityChange = async (newQuantity: number) => {
+    if (!selectedVariantId) {
+      return
+    }
+
     if (newQuantity >= 0) {
       await updateQuantity(selectedVariantId, newQuantity)
     }

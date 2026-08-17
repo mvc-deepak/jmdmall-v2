@@ -44,6 +44,7 @@ export const bannerConfigs: BannerConfig[] = [
       {
         icon: "shield",
         title: "100% Original",
+        description: "Trusted quality",
       },
     ],
   },

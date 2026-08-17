@@ -1,31 +1,46 @@
-import { Github } from "@medusajs/icons";
-import { Button, Heading } from "@modules/common/components/ui";
+import { Github } from "@medusajs/icons"
+import { Button, Heading } from "@modules/common/components/ui"
+
 const Hero = () => {
   return (
-    <div className="h-[75vh] w-full border-b border-ui-border-base relative bg-ui-bg-subtle">
-      <div className="absolute inset-0 z-10 flex flex-col justify-center items-center text-center small:p-32 gap-6">
-        <span>
+    <div className="relative w-full overflow-hidden border-b border-slate-200 bg-[radial-gradient(circle_at_top,_#f5fef8,_#ffffff_45%,_#f8fafc_100%)]">
+      <div className="mx-auto flex min-h-[68vh] max-w-7xl items-center justify-center px-4 py-16 text-center sm:px-6 lg:px-8">
+        <div className="max-w-3xl">
+          <span className="inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.24em] text-emerald-700">
+            Fresh everyday essentials
+          </span>
           <Heading
             level="h1"
-            className="text-3xl leading-10 text-ui-fg-base font-normal"
+            className="mt-6 text-4xl font-black tracking-tight text-slate-900 sm:text-5xl lg:text-6xl"
           >
-            Ecommerce Starter Template
+            Smart shopping for your daily routine
           </Heading>
           <Heading
             level="h2"
-            className="text-3xl leading-10 text-ui-fg-subtle font-normal"
+            className="mt-4 text-lg font-medium text-slate-600 sm:text-xl"
           >
-            Powered by Medusa and Next.js
+            Groceries, home essentials, and curated favorites delivered with ease.
           </Heading>
-        </span>
-        <a href="https://github.com/medusajs/dtc-starter" target="_blank">
-          <Button variant="secondary">
-            View on GitHub <Github />
-          </Button>
-        </a>
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+            <a
+              href="/store"
+              className="inline-flex items-center justify-center rounded-full bg-emerald-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700"
+            >
+              Shop now
+            </a>
+            <a
+              href="https://github.com/medusajs/dtc-starter"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-800 transition hover:border-slate-300 hover:bg-slate-50"
+            >
+              View on GitHub <Github />
+            </a>
+          </div>
+        </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Hero;
+export default Hero

@@ -12,7 +12,7 @@ export async function GET(request: Request) {
   }
 
   const defaultCountryCode =
-    process.env.NEXT_PUBLIC_DEFAULT_REGION || "us"
+    process.env.NEXT_PUBLIC_DEFAULT_REGION || "in"
 
   const region = await getRegion(defaultCountryCode)
 

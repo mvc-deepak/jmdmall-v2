@@ -32,6 +32,9 @@
     ".next",
     ".nyc_output",
     "coverage",
-    "jest-coverage"
+    "jest-coverage",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "src/lib/data/__tests__/**"
   ]
 }

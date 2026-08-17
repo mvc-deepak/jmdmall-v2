@@ -33,14 +33,17 @@ const getDB = (): Promise<IDBDatabase> => {
   })
 }
 
-const withStore = async <T>(mode: IDBTransactionMode, callback: (store: IDBObjectStore) => IDBRequest<T>) => {
+const withStore = async <T>(
+  mode: IDBTransactionMode,
+  callback: (store: IDBObjectStore) => IDBRequest<any>
+) => {
   const db = await getDB()
   return new Promise<T>((resolve, reject) => {
     const tx = db.transaction(STORE_NAME, mode)
     const store = tx.objectStore(STORE_NAME)
-    const request = callback(store)
+    const request = callback(store) as IDBRequest<any>
 
-    request.onsuccess = () => resolve(request.result)
+    request.onsuccess = () => resolve(request.result as T)
     request.onerror = () => reject(request.error)
   })
 }

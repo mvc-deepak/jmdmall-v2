@@ -15,7 +15,7 @@ const CheckoutSummary = ({ cart }: { cart: HttpTypes.StoreCart }) => {
         {/* Products Grid */}
         <div className="grid grid-cols-2 gap-2 mb-3 pb-3 border-b border-gray-200 max-h-72 overflow-y-auto">
           {items.map((item) => (
-            <div key={item.id} className="border border-gray-200 rounded p-2 bg-gray-50">
+            <div key={item.id || item.variant_id} className="border border-gray-200 rounded p-2 bg-gray-50">
               {/* Item Image */}
               <div className="w-full aspect-square bg-gray-100 rounded overflow-hidden flex items-center justify-center mb-1">
                 {item.thumbnail ? (

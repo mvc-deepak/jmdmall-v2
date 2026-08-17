@@ -88,67 +88,64 @@ export default function ProductPreview({
   return (
     <LocalizedClientLink
       href={`/products/${product.handle}`}
-      className="group block w-full"
+      className="group block h-full w-full"
     >
-      <article className="flex h-full flex-col overflow-hidden rounded-[12px] border border-ui-border-base bg-white shadow-sm transition duration-150 ease-out hover:shadow-sm">
+      <article className="flex h-full flex-col overflow-hidden rounded-[16px] border border-slate-200 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-lg">
         <div className="relative overflow-hidden bg-[#faf8ef]">
           <Thumbnail
             thumbnail={product.thumbnail}
             images={product.images}
             size="full"
             isFeatured={isFeatured}
-            className="bg-[#faf8ef] !h-[180px] !p-1"
+            className="!h-[200px] !p-1"
           />
           <div className="absolute right-2 top-2 z-10">
             <WishlistButton product={product} size="sm" />
           </div>
           {discount && (
-            <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded-md text-xs font-bold">
+            <div className="absolute left-2 top-2 rounded-md bg-red-500 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-white">
               {discount}% OFF
             </div>
           )}
         </div>
 
-        <div className="flex flex-1 flex-col gap-2 px-3 py-2">
-          <span className="inline-flex items-center gap-1 rounded-full bg-[#f7f0e2] px-3 py-[5px] text-[11px] font-medium text-[#5f4d28] max-w-max">
+        <div className="flex flex-1 flex-col gap-2 px-3 py-3">
+          <span className="inline-flex w-fit items-center gap-1 rounded-full bg-[#f7f0e2] px-2.5 py-1 text-[10px] font-medium text-[#5f4d28]">
             <span aria-hidden="true">🕐</span>
             <span>{deliveryLabel}</span>
           </span>
 
           <Text
-            className="line-clamp-2 text-[15px] leading-5 text-ui-fg-base"
+            className="line-clamp-2 text-[15px] font-medium leading-5 text-slate-900"
             data-testid="product-title"
           >
             {product.title}
           </Text>
 
           {variantLabel && (
-            <Text className="text-[14px] leading-5 text-ui-fg-muted">
+            <Text className="text-[13px] leading-5 text-slate-500">
               {variantLabel}
             </Text>
           )}
 
-          <div className="mt-auto flex flex-col gap-1 pt-2">
-            {/* Price Row */}
+          <div className="mt-auto flex flex-col gap-2 pt-2">
             <div className="flex items-center gap-2">
               <Text className="text-[15px] font-bold text-emerald-600">
                 {cheapestPrice?.calculated_price || "Price unavailable"}
               </Text>
               {cheapestPrice?.original_price && cheapestPrice.original_price !== cheapestPrice.calculated_price && (
-                <Text className="text-[12px] text-gray-400 line-through">
+                <Text className="text-[12px] text-slate-400 line-through">
                   {cheapestPrice.original_price}
                 </Text>
               )}
             </div>
 
-            {/* Variant Count Label */}
             {variantCountLabel && (
-              <Text className="text-[11px] text-ui-fg-muted">
+              <Text className="text-[11px] text-slate-500">
                 {variantCountLabel}
               </Text>
             )}
 
-            {/* Add to Cart Button */}
             <div className="flex justify-end pt-1" onClick={(e) => e.stopPropagation()}>
               <AddToCart product={product} />
             </div>

@@ -24,9 +24,9 @@ const StoreTemplate = ({
   const sort = sortBy || "created_at"
 
   return (
-    <div className="w-full max-w-full px-6 py-6" data-testid="category-container">
-      <div className="mb-8 text-2xl-semi">
-        <h1 data-testid="store-page-title">
+    <div className="w-full max-w-full px-4 md:px-6 py-8" data-testid="category-container">
+      <div className="mb-8">
+        <h1 data-testid="store-page-title" className="text-3xl md:text-4xl font-bold tracking-tight text-slate-900">
           {searchQuery ? `Search results for "${searchQuery}"` : "All products"}
         </h1>
       </div>

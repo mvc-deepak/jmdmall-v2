@@ -20,10 +20,16 @@ const LocalizedClientLink = ({
   passHref?: true
   [x: string]: unknown
 }) => {
-  const { countryCode } = useParams()
+  const { countryCode } = useParams<{ countryCode?: string }>()
+  const resolvedCountryCode =
+    countryCode && countryCode.trim()
+      ? countryCode
+      : typeof window !== "undefined"
+        ? window.location.pathname.split("/")[1] || process.env.NEXT_PUBLIC_DEFAULT_REGION || "in"
+        : process.env.NEXT_PUBLIC_DEFAULT_REGION || "in"
 
   return (
-    <Link href={`/${countryCode}${href}`} {...props}>
+    <Link href={`/${resolvedCountryCode}${href}`} {...props}>
       {children}
     </Link>
   )

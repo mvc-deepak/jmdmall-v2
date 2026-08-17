@@ -18,6 +18,8 @@ import {
   setAuthToken,
   setPendingCustomer,
 } from "./cookies"
+import { clearStoredCart } from "./indexed-db-cart"
+import { clearStoredWishlist } from "./indexed-db-wishlist"
 
 export type CustomerAuthState =
   | { state: "error"; error: string }
@@ -259,6 +261,13 @@ export async function signout(countryCode: string) {
 
   const cartCacheTag = await getCacheTag("carts")
   revalidateTag(cartCacheTag)
+
+  if (typeof window !== "undefined") {
+    await clearStoredCart()
+    await clearStoredWishlist()
+    window.dispatchEvent(new CustomEvent("cartUpdated", { detail: null }))
+    window.dispatchEvent(new CustomEvent("wishlistUpdated"))
+  }
 
   redirect(`/${countryCode}/account`)
 }

@@ -5,7 +5,7 @@ import LocalizedClientLink from "@modules/common/components/localized-client-lin
 import PlaceholderImage from "@modules/common/icons/placeholder-image"
 
 const getCategoryImage = (category: HttpTypes.StoreProductCategory) => {
-  const categoryData = category as Record<string, unknown>
+  const categoryData = category as unknown as Record<string, unknown>
   const metadata = (categoryData.metadata as Record<string, unknown> | undefined) ?? {}
 
   const candidates = [

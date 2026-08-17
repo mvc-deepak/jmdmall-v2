@@ -27,7 +27,7 @@
       rgba(255, 255, 255, 0.25),
       transparent 22%
     ),
-    linear-gradient(110deg, #ffd72e, #ffc928);
+    linear-gradient(110deg, #dcfce7, #bbf7d0);
 }
 
 .hero-banner::before {

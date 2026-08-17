@@ -20,14 +20,17 @@ const getDB = (): Promise<IDBDatabase> => {
   })
 }
 
-const withStore = async <T>(mode: IDBTransactionMode, callback: (store: IDBObjectStore) => IDBRequest<T>) => {
+const withStore = async <T>(
+  mode: IDBTransactionMode,
+  callback: (store: IDBObjectStore) => IDBRequest<any>
+) => {
   const db = await getDB()
   return new Promise<T>((resolve, reject) => {
     const tx = db.transaction(STORE_NAME, mode)
     const store = tx.objectStore(STORE_NAME)
-    const request = callback(store)
+    const request = callback(store) as IDBRequest<any>
 
-    request.onsuccess = () => resolve(request.result)
+    request.onsuccess = () => resolve(request.result as T)
     request.onerror = () => reject(request.error)
   })
 }
@@ -55,21 +58,28 @@ export const mergeGuestCart = async (guestCart: Cart, serverCart: Cart): Promise
   const mergedItems: Record<string, CartItem> = {}
 
   const addItem = (item: CartItem) => {
+    if (!item || !item.variant_id || !item.product_id) {
+      return
+    }
+
     const key = `${item.product_id}_${item.variant_id}`
     if (!mergedItems[key]) {
-      mergedItems[key] = { ...item }
+      mergedItems[key] = { ...item, quantity: Number(item.quantity || 0) }
     } else {
-      mergedItems[key].quantity += item.quantity
+      mergedItems[key].quantity += Number(item.quantity || 0)
     }
   }
 
-  guestCart.items.forEach(addItem)
-  serverCart.items.forEach(addItem)
+  ;(guestCart?.items ?? []).forEach(addItem)
+  ;(serverCart?.items ?? []).forEach(addItem)
+
+  const items = Object.values(mergedItems).filter((item) => item.quantity > 0)
 
   return {
     ...serverCart,
-    items: Object.values(mergedItems),
-    total: Object.values(mergedItems).reduce((sum, item) => sum + item.price * item.quantity, 0),
+    ...guestCart,
+    items,
+    total: items.reduce((sum, item) => sum + (Number(item.price) || 0) * item.quantity, 0),
     last_updated: Date.now(),
     is_guest: false,
   }

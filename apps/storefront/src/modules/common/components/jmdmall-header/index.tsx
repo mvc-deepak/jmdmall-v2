@@ -70,7 +70,7 @@ export default async function JMDMALLHeader({
 
           {/* Account Button */}
           <Link
-            href={isLoggedIn ? "/us/account" : "/us/account"}
+            href={`/${process.env.NEXT_PUBLIC_DEFAULT_REGION || "in"}/account`}
             className="account-button"
           >
             <UserIcon size={20} />

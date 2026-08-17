@@ -55,6 +55,10 @@ export default function ProductDetailActions({
   }
 
   const handleQuantityChange = async (newQuantity: number) => {
+    if (!selectedVariantId) {
+      return
+    }
+
     if (newQuantity <= 0) {
       // Remove from cart
       // Implementation would need removeItem function
@@ -176,4 +180,4 @@ export default function ProductDetailActions({
     </div>
   )
 }
-src/modules/products/components/add-to-cart.tsx 
+ 

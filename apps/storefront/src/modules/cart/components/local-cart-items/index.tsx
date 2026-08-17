@@ -1,8 +1,15 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useCart } from '@lib/hooks/useCart'
 import { useWishlist } from '@lib/hooks/useWishlist'
+import {
+  getAccountLoginRedirectUrl,
+  getCheckoutRedirectPath,
+  getCountryCodeFromPath,
+  isCustomerAuthenticated,
+} from '@lib/util/customer-auth'
 import Link from 'next/link'
 import LocalizedClientLink from '@modules/common/components/localized-client-link'
 
@@ -28,6 +35,7 @@ interface SavedAddress {
 }
 
 export default function LocalCartItems() {
+  const router = useRouter()
   const { cart, updateQuantity, removeItem, clearCart } = useCart()
   const { addItem: addToWishlist } = useWishlist()
   const [isMounted, setIsMounted] = useState(false)
@@ -55,6 +63,7 @@ export default function LocalCartItems() {
     try {
       const response = await fetch('/store/customers/me/addresses', {
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
       })
 
       if (response.ok) {
@@ -120,12 +129,21 @@ export default function LocalCartItems() {
     }
   }
 
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
     if (!items || items.length === 0) {
       alert('Cart is empty')
       return
     }
-    setShowCheckout(true)
+
+    const countryCode = getCountryCodeFromPath()
+    const checkoutUrl = getCheckoutRedirectPath(countryCode)
+
+    if (await isCustomerAuthenticated()) {
+      router.push(checkoutUrl)
+      return
+    }
+
+    router.push(getAccountLoginRedirectUrl(countryCode))
   }
 
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -170,7 +188,8 @@ export default function LocalCartItems() {
   }
 
   const handleSignIn = () => {
-    // Redirect to login - guest cart items cleared on login per Medusa flow
+    const countryCode = getCountryCodeFromPath()
+    router.push(getAccountLoginRedirectUrl(countryCode))
   }
 
   return (
@@ -260,9 +279,9 @@ export default function LocalCartItems() {
             </div>
           </div>
           <div>
-            <Link href="/in/store" className="text-xs text-emerald-600 hover:text-emerald-700 font-medium">
+            <LocalizedClientLink href="/store" className="text-xs text-emerald-600 hover:text-emerald-700 font-medium">
               ← Continue Shopping
-            </Link>
+            </LocalizedClientLink>
           </div>
         </div>
 
@@ -284,19 +303,20 @@ export default function LocalCartItems() {
           </div>
 
           <div className="pt-1 border-t border-gray-200">
-            <LocalizedClientLink
-              href="/checkout?step=address"
+            <button
+              type="button"
+              onClick={handleCheckout}
               className="inline-flex w-full items-center justify-center rounded-lg bg-emerald-600 px-3 py-2.5 text-xs font-medium text-white transition hover:bg-emerald-700 disabled:bg-gray-400"
             >
               Checkout
-            </LocalizedClientLink>
+            </button>
           </div>
 
           <div className="border-t border-gray-200 pt-3">
             <p className="text-[11px] text-gray-600 mb-2">Already a customer?</p>
-            <Link href="/in/account/login" className="inline-flex w-full items-center justify-center rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-medium text-gray-800 hover:border-emerald-600 hover:text-emerald-700 transition">
+            <LocalizedClientLink href="/account" className="inline-flex w-full items-center justify-center rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-medium text-gray-800 hover:border-emerald-600 hover:text-emerald-700 transition">
               Login
-            </Link>
+            </LocalizedClientLink>
           </div>
         </aside>
       </div>
@@ -321,10 +341,11 @@ export default function LocalCartItems() {
 
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 <button
+                  type="button"
                   onClick={handleSignIn}
                   className="rounded-full bg-emerald-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700"
                 >
-                  <a href="/in/account/login" className="inline-block w-full">Sign In</a>
+                  Sign In
                 </button>
 
                 <button
@@ -337,9 +358,9 @@ export default function LocalCartItems() {
 
               <p className="text-center text-xs text-slate-500">
                 Don’t have an account?{' '}
-                <Link href="/in/account/register" className="font-semibold text-emerald-700 hover:text-emerald-800">
+                <LocalizedClientLink href="/account" className="font-semibold text-emerald-700 hover:text-emerald-800">
                   Create one
-                </Link>
+                </LocalizedClientLink>
               </p>
             </div>
           )}

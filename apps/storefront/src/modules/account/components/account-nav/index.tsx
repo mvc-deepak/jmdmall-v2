@@ -5,6 +5,8 @@ import { clx } from "@modules/common/components/ui"
 import { useParams, usePathname } from "next/navigation"
 
 import { signout } from "@lib/data/customer"
+import { useCart } from "@lib/hooks/useCart"
+import { useWishlist } from "@lib/hooks/useWishlist"
 import { HttpTypes } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import ChevronDown from "@modules/common/icons/chevron-down"
@@ -19,8 +21,12 @@ const AccountNav = ({
 }) => {
   const route = usePathname()
   const { countryCode } = useParams() as { countryCode: string }
+  const { clearCart } = useCart()
+  const { clearWishlist } = useWishlist()
 
   const handleLogout = async () => {
+    await clearCart()
+    await clearWishlist()
     await signout(countryCode)
   }
 
