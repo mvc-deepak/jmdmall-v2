@@ -13,6 +13,23 @@ const S3_PATHNAME = process.env.MEDUSA_CLOUD_S3_PATHNAME
  */
 const nextConfig = {
   reactStrictMode: true,
+  async rewrites() {
+    const backendUrl = (process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:9000").replace(/\/$/, "")
+
+    return [
+      // Important: Rewrites are applied only if the path doesn't match any file on disk or API route.
+      // This means /api/store/* will NOT be rewritten because it's handled by /app/api/store/[...path]/route.ts
+      // Only /store/* requests (without /api prefix) will be rewritten to the backend.
+      {
+        source: "/store/:path*",
+        destination: `${backendUrl}/store/:path*`,
+      },
+      {
+        source: "/admin/:path*",
+        destination: `${backendUrl}/admin/:path*`,
+      },
+    ]
+  },
   logging: {
     fetches: {
       fullUrl: true,

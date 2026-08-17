@@ -30,7 +30,7 @@ const mergeWishlistItems = (items: WishlistItem[]) => {
 
 const fetchServerWishlist = async (): Promise<WishlistItem[]> => {
   try {
-    const response = await fetch('/store/wishlist', { cache: 'no-store' })
+    const response = await fetch('/api/store/wishlist', { cache: 'no-store' })
     if (!response.ok) {
       return []
     }
@@ -44,7 +44,7 @@ const fetchServerWishlist = async (): Promise<WishlistItem[]> => {
 
 const addServerWishlistItem = async (item: WishlistItem) => {
   try {
-    const response = await fetch('/store/wishlist', {
+    const response = await fetch('/api/store/wishlist', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -70,7 +70,7 @@ const addServerWishlistItem = async (item: WishlistItem) => {
 const removeServerWishlistItem = async (item: WishlistItem) => {
   try {
     const query = item.product_id ? `?product_id=${encodeURIComponent(item.product_id)}` : `?item_id=${encodeURIComponent(item.id)}`
-    const response = await fetch(`/store/wishlist${query}`, {
+    const response = await fetch(`/api/store/wishlist${query}`, {
       method: 'DELETE',
     })
 
@@ -86,7 +86,7 @@ const removeServerWishlistItem = async (item: WishlistItem) => {
 
 const isAuthenticated = async (): Promise<boolean> => {
   try {
-    const response = await fetch('/store/customers/me', {
+    const response = await fetch('/api/auth/customers/me', {
       cache: 'no-store',
       credentials: 'include',
     })

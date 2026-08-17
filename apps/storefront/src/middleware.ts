@@ -101,7 +101,12 @@ async function getCountryCode(
  * Middleware to handle region selection and onboarding status.
  */
 export async function middleware(request: NextRequest) {
-  if (request.nextUrl.pathname.includes(".")) {
+  if (
+    request.nextUrl.pathname.includes(".") ||
+    request.nextUrl.pathname.startsWith("/store") ||
+    request.nextUrl.pathname.startsWith("/admin") ||
+    request.nextUrl.pathname.startsWith("/api")
+  ) {
     return NextResponse.next()
   }
 

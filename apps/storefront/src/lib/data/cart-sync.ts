@@ -19,9 +19,8 @@ const fetchJson = async <T>(url: string, init: RequestInit = {}) => {
 
 export const getAuthenticatedCustomer = async (): Promise<boolean> => {
   try {
-    const response = await fetch("/store/customers/me", {
+    const response = await fetch("/api/auth/customers/me", {
       method: "GET",
-      headers: DEFAULT_HEADERS,
       credentials: "include",
     })
 

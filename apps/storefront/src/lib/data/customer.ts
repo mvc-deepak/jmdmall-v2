@@ -16,6 +16,7 @@ import {
   removeCartId,
   removePendingCustomer,
   setAuthToken,
+  setCartId,
   setPendingCustomer,
 } from "./cookies"
 import { clearStoredCart } from "./indexed-db-cart"
@@ -227,6 +228,15 @@ async function completeLogin(
 
   try {
     await transferCart()
+    
+    // If no cart exists after transfer, create a new one
+    const existingCartId = await getCartId()
+    if (!existingCartId) {
+      const { cart } = await sdk.store.cart.create({})
+      if (cart?.id) {
+        await setCartId(cart.id)
+      }
+    }
   } catch (error) {
     return { state: "error", error: String(error) }
   }

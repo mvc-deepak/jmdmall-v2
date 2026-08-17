@@ -18,7 +18,7 @@ export default function AccountRedirectGuard() {
 
     const redirectToCheckout = async () => {
       try {
-        const response = await fetch('/store/customers/me', {
+        const response = await fetch('/api/auth/customers/me', {
           cache: 'no-store',
           credentials: 'include',
         })

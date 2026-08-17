@@ -16,10 +16,9 @@ export const isCustomerAuthenticated = async (): Promise<boolean> => {
   }
 
   try {
-    const response = await fetch("/store/customers/me", {
+    const response = await fetch("/api/auth/customers/me", {
       cache: "no-store",
       credentials: "include",
-      headers: { "Content-Type": "application/json" },
     })
 
     return response.ok

@@ -21,7 +21,7 @@ const initialCart = (): Cart => ({
 
 const isAuthenticated = async (): Promise<boolean> => {
   try {
-    const response = await fetch("/store/customers/me", {
+    const response = await fetch("/api/auth/customers/me", {
       cache: "no-store",
       credentials: "include",
     })
@@ -33,7 +33,7 @@ const isAuthenticated = async (): Promise<boolean> => {
 
 const fetchServerCart = async (): Promise<any | null> => {
   try {
-    const response = await fetch("/store/carts", { cache: "no-store" })
+    const response = await fetch("/api/store/carts", { cache: "no-store" })
     if (!response.ok) {
       return null
     }
@@ -52,7 +52,7 @@ const addServerCartItem = async (item: CartItem) => {
       return null
     }
 
-    const response = await fetch(`/store/carts/${serverCart.id}/line-items`, {
+    const response = await fetch(`/api/store/carts/${serverCart.id}/line-items`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -86,7 +86,7 @@ const updateServerCartItem = async (variantId: string, quantity: number) => {
       return null
     }
 
-    const response = await fetch(`/store/carts/${serverCart.id}/line-items/${lineItem.id}`, {
+    const response = await fetch(`/api/store/carts/${serverCart.id}/line-items/${lineItem.id}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ quantity }),
@@ -117,7 +117,7 @@ const removeServerCartItem = async (variantId: string) => {
       return null
     }
 
-    const response = await fetch(`/store/carts/${serverCart.id}/line-items/${lineItem.id}`, {
+    const response = await fetch(`/api/store/carts/${serverCart.id}/line-items/${lineItem.id}`, {
       method: "DELETE",
     })
 
@@ -168,7 +168,7 @@ export function useIndexedDbCart() {
 
   const syncFromServer = useCallback(async () => {
     try {
-      const response = await fetch("/store/carts", {
+      const response = await fetch("/api/store/carts", {
         cache: "no-store",
       })
 
