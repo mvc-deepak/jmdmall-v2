@@ -5,7 +5,7 @@ class WishlistModuleService extends MedusaService({
   WishlistItem,
 }) {
   async listWishlistItemsByCustomer(customerId: string) {
-    return await this.WishlistItem_.find({
+    return await (this as any).WishlistItem_.find({
       where: { customer_id: customerId },
       orderBy: { created_at: "DESC" },
     })
@@ -23,7 +23,7 @@ class WishlistModuleService extends MedusaService({
       metadata?: Record<string, any> | null
     }
   ) {
-    const existing = await this.WishlistItem_.findOne({
+    const existing = await (this as any).WishlistItem_.findOne({
       where: { customer_id: customerId, product_id: input.product_id },
     })
 
@@ -31,7 +31,7 @@ class WishlistModuleService extends MedusaService({
       return existing
     }
 
-    return await this.WishlistItem_.create({
+    return await (this as any).WishlistItem_.create({
       customer_id: customerId,
       product_id: input.product_id,
       variant_id: input.variant_id ?? null,
@@ -57,13 +57,13 @@ class WishlistModuleService extends MedusaService({
       where.product_id = productId
     }
 
-    const item = await this.WishlistItem_.findOne({ where })
+    const item = await (this as any).WishlistItem_.findOne({ where })
 
     if (!item) {
       return null
     }
 
-    await this.WishlistItem_.remove(item)
+    await (this as any).WishlistItem_.remove(item)
     return item
   }
 }

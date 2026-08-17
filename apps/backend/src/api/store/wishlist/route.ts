@@ -3,8 +3,8 @@ import { WISHLIST_MODULE } from "../../../modules/wishlist"
 import WishlistModuleService from "../../../modules/wishlist/service"
 
 export async function GET(req: MedusaRequest, res: MedusaResponse) {
-  const actor = req.scope.resolve("actor")
-  const customer = actor?.actor_id
+  const actor = (req.scope.resolve("actor") as any) || {}
+  const customer = actor.actor_id
 
   if (!customer) {
     res.status(401).json({ message: "Unauthorized" })
@@ -12,14 +12,14 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
   }
 
   const service = req.scope.resolve(WISHLIST_MODULE) as WishlistModuleService
-  const items = await service.listWishlistItemsByCustomer(customer.id)
+  const items = await service.listWishlistItemsByCustomer(customer)
 
   res.json({ items })
 }
 
 export async function POST(req: MedusaRequest, res: MedusaResponse) {
-  const actor = req.scope.resolve("actor")
-  const customer = actor?.actor_id
+  const actor = (req.scope.resolve("actor") as any) || {}
+  const customer = actor.actor_id
 
   if (!customer) {
     res.status(401).json({ message: "Unauthorized" })
@@ -42,7 +42,7 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
   }
 
   const service = req.scope.resolve(WISHLIST_MODULE) as WishlistModuleService
-  const item = await service.addWishlistItemForCustomer(customer.id, {
+  const item = await service.addWishlistItemForCustomer(customer, {
     product_id: body.product_id,
     variant_id: body.variant_id ?? null,
     product_handle: body.product_handle ?? null,
@@ -56,8 +56,8 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
 }
 
 export async function DELETE(req: MedusaRequest, res: MedusaResponse) {
-  const actor = req.scope.resolve("actor")
-  const customer = actor?.actor_id
+  const actor = (req.scope.resolve("actor") as any) || {}
+  const customer = actor.actor_id
 
   if (!customer) {
     res.status(401).json({ message: "Unauthorized" })
@@ -71,7 +71,7 @@ export async function DELETE(req: MedusaRequest, res: MedusaResponse) {
 
   const service = req.scope.resolve(WISHLIST_MODULE) as WishlistModuleService
   const deleted = await service.removeWishlistItemForCustomer(
-    customer.id,
+    customer,
     item_id,
     product_id
   )
